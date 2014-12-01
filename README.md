@@ -4,9 +4,9 @@ markov-chain-py
 preloaded with taylor swift lyrics and birds' rights activist's twitter
 
 to run
-...
-./generate 
-...
+
+    ./generate 
+
 
 todo:
 - output always starts from begining of corpus
