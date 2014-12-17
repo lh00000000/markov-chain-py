@@ -1,6 +1,6 @@
 markov-chain-py
 ===============
-![example](example.png?raw=true "example")
+![example](example.jpg?raw=true "example")
 preloaded with taylor swift lyrics and birds' rights activist's twitter
 
 to run
