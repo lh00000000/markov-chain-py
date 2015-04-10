@@ -1,36 +1,59 @@
+from collections import defaultdict
+from itertools import chain
 import random
-import sys
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
+class MarkovCharacter(object):
 
-nonword = "\n"
-w1 = nonword
-w2 = nonword
+    def __init__(self, filepath):
+        self.knowledge = defaultdict(list)
+        self.train(filepath)
 
-table = {}
+    def train(self, filepath):
+        def text_to_knowledge(text):
+            def tokenize_text(text):
+                def tokenize_line(line):
+                    line_tokens = [w.strip() for w in line.split() if w.strip() != '']
+                    return line_tokens
+                tokens = [tokenize_line(line) for line in text]
+                return list(chain.from_iterable(tokens))
 
-for line in sys.stdin:
-	for word in line.split():
-		table.setdefault( (w1, w2), []).append(word)
-		w1, w2 = w2, word
+            def yield_trigrams():
+                if len(tokens) < 3:
+                    return
+                for i in range(len(tokens) - 3):
+                    yield (tokens[i], tokens[i + 1], tokens[i + 2])
 
-table.setdefault( (w1, w2), []).append(nonword)
+            tokens = tokenize_text(text)
+            text_knowledge = defaultdict(list)
+            for w1, w2, w3 in yield_trigrams():
+                text_knowledge[(w1, w2)].append(w3)
+            return text_knowledge
 
-w1 = nonword
-w2 = nonword
+        def append_new_knowledge(new_knowledge):
+            for gram in new_knowledge.items():
+                self.knowledge[gram[0]].append(gram[1][0])
+            
+        with open(filepath) as f:
+            text = [line for line in f]
+        append_new_knowledge(text_to_knowledge(text))
 
-maxwords = 1000
+    def generate_phrase(self, min_chars=100, max_chars=140):
+        random_bigram_key = random.choice(self.knowledge.keys())
 
-outputText = ""
-for i in xrange(maxwords):
-	newword = random.choice(table[(w1,w2)])
-	if newword == nonword: sys.exit()
-	#print newword
-	outputText += " "
-	outputText += newword
-	w1, w2 = w2, newword
+        w1, w2 = random_bigram_key[0], random_bigram_key[1]
+        phrase = '  '
 
-f = open('output.txt', 'w')
-f.write(outputText)
-f.close()
+        while phrase[-2] not in '.!?' and len(phrase) < max_chars:
+            phrase += (w1 + ' ')
+            w1, w2 = w2, random.choice(self.knowledge[(w1, w2)])
+
+        return phrase.strip()
+
+def main():
+    mk = MarkovCharacter("tswiftBRA")
+
+    print mk.generate_phrase()
+
+
+if __name__ == '__main__':
+    main()
