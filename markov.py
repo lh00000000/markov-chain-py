@@ -47,10 +47,14 @@ class MarkovCharacter(object):
             phrase += (w1 + ' ')
             w1, w2 = w2, random.choice(self.knowledge[(w1, w2)])
 
-        return phrase.strip()
+        if (len(phrase) < min_chars):
+            return self.generate_phrase(min_chars, max_chars)
+        else:
+            return phrase.strip()
 
 def main():
-    mk = MarkovCharacter("tswiftBRA")
+    mk = MarkovCharacter("tswift-corpus.txt")
+    mk.train("birds-rights-activist-corpus.txt")
 
     print mk.generate_phrase()
 
